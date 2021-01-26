@@ -1,6 +1,5 @@
 package com.company;
 
-//package testerasync;
 
 /**
  * @author seank
@@ -9,7 +8,7 @@ package com.company;
 import java.util.*;
 //import java.util.stream.DoubleStream;
 
-public class TesterAsync {
+public class Main {
 
     private static double sum1;
     private static double sum2;
@@ -23,7 +22,7 @@ public class TesterAsync {
         double grandTotalSeq = 0.0;
         double grandTotalPar = 0.0;
         double grandTotalQuad = 0.0;
-        double grandTotalStream = 0.0;
+        //double grandTotalStream = 0.0;
 
 
         int rnNumber;
@@ -41,10 +40,64 @@ public class TesterAsync {
             testArray[i] = rnNumber;
         }
 
+
         grandTotalSeq = arraySumSequential(testArray);
         grandTotalPar = arraySumParallel(testArray);
-        //grandTotalQuad = arraySumQuadruple(testArray);
+        grandTotalQuad = arraySumQuadruple(testArray);
         //grandTotalStream = arraySumStream(testArray);
+
+        //jump a line on print
+        System.out.println();
+
+        //call the method with menu options
+        menu(testArray);
+    }
+
+
+
+    private static double arraySumQuadruple(double[] arr) {
+
+        // START our 'stopwatch' to record the duration of the PARALLEL calculation
+        long startPoint = System.nanoTime();
+
+        // Set the four independent array sum variables
+        //sum initialization
+        sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
+
+
+        // Create a 'for...loop' to calculate the sum of the reciprocals in
+        // the top 1/4 of the array (from zero to first quarter)
+        for (int i = 0; i < arr.length / 4; i++) {
+            sum1 += 1 / arr[i];
+        }
+
+        // Create a 'for...loop' to calculate the sum of the reciprocals in
+        // 2/4 of the array (from first to second quarter)
+        for (int i = arr.length / 4; i < arr.length / 4 * 2; i++) {
+            sum2 += 1 / arr[i];
+        }
+
+        // Create a 'for...loop' to calculate the sum of the reciprocals in
+        // 3/4 of the array (from second to third quarter)
+        for (int i = arr.length / 4 * 2; i < arr.length / 4 * 3; i++) {
+            sum3 += 1 / arr[i];
+        }
+        // Create a 'for...loop' to calculate the sum of the reciprocals in
+        // the BOTTOM half of the array (from third to full size)
+        for (int i = arr.length / 4 * 3; i < arr.length; i++) {
+            sum4 += 1 / arr[i];
+        }
+
+
+        // Calculate the total sum from the result of each for...loop
+        double finalSum = sum1 + sum2 + sum3 + sum4;
+
+        // STOP our 'stopwatch' to record the duration of the calculation
+        long nanoRunTime = System.nanoTime() - startPoint;
+
+        // Use the method to print the results for the SEQUENTIAL calculation
+        printOutcome("QuadrupleL", nanoRunTime, finalSum);
+        return finalSum;
     }
 
     private static double arraySumSequential(double[] arr) {
@@ -58,15 +111,15 @@ public class TesterAsync {
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
         // the top HALF of the array
-        for (int i = 0; i < arr.length / 2; i++) {
-            sum1 += 1 / arr[i];
-        }
+        for (int i = 0; i < arr.length; i++) {
+            sum1 += 1 / arr[i];        }
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
         // the BOTTOM half of the array
-        for (int i = arr.length / 2; i < arr.length; i++) {
+        for (int i = arr.length / 2; i < arr.length ; i++) {
             sum2 += 1 / arr[i];
         }
+
 
         // Calculate the total sum from the result of each for...loop
         double finalSum = sum1 + sum2;
@@ -123,15 +176,40 @@ public class TesterAsync {
         return finalSum;
     }
 
-    //private static double arraySumQuadruple(double[] arr) throws InterruptedException {
-
-    //Your code goes here
-    //}
 
     //private static double arraySumStream(double[] arr) {
 
     //Your code goes here
     //}
+    public static void menu(double[] testArray) throws InterruptedException {
+
+        //initial switch case variable
+        int selection = 0;
+        Scanner sc =new Scanner(System.in);
+
+        while(true){
+            //print for user to select
+            System.out.println(" select number from menu to choose type of calculation to perform");
+            System.out.println(" 1. Sequential");
+            System.out.println(" 2. Parallel");
+            System.out.println(" 3. Quadruple");
+            System.out.println(" 4. Exit");
+
+            //get int from user
+            selection = sc.nextInt();
+            switch (selection) {
+                //call method depending on value of selection
+                case 1 -> arraySumSequential(testArray);
+                case 2 -> arraySumParallel(testArray);
+                case 3 -> arraySumQuadruple(testArray);
+                //exit program when 4 is selected
+                case 4 -> System.exit(0);
+                //default called when user selects wrong input
+                default -> System.out.println("oops! try again please.....");
+            }
+        }
+
+    }
 
     private static void printOutcome(String label, long runTime, double sum) {
         System.out.printf(" %s process runtime was %8.3f milliseconds with final sum as %8.5f \n", label, runTime / 1e6, sum);
