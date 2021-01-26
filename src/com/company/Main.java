@@ -6,6 +6,8 @@ package com.company;
  * This Java application allows for the experimentation with Threads and Parallel Programming
  */
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.DoubleStream;
 //import java.util.stream.DoubleStream;
 
 public class Main {
@@ -22,7 +24,7 @@ public class Main {
         double grandTotalSeq = 0.0;
         double grandTotalPar = 0.0;
         double grandTotalQuad = 0.0;
-        //double grandTotalStream = 0.0;
+        double grandTotalStream = 0.0;
 
 
         int rnNumber;
@@ -44,7 +46,7 @@ public class Main {
         grandTotalSeq = arraySumSequential(testArray);
         grandTotalPar = arraySumParallel(testArray);
         grandTotalQuad = arraySumQuadruple(testArray);
-        //grandTotalStream = arraySumStream(testArray);
+        grandTotalStream = arraySumStream(testArray);
 
         //jump a line on print
         System.out.println();
@@ -55,7 +57,7 @@ public class Main {
 
 
 
-    private static double arraySumQuadruple(double[] arr) {
+    private static double arraySumQuadruple(double[] arr) throws InterruptedException {
 
         // START our 'stopwatch' to record the duration of the PARALLEL calculation
         long startPoint = System.nanoTime();
@@ -67,26 +69,55 @@ public class Main {
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
         // the top 1/4 of the array (from zero to first quarter)
-        for (int i = 0; i < arr.length / 4; i++) {
-            sum1 += 1 / arr[i];
-        }
+        //create a thread to run loop
+        Thread thread1 = new Thread( ()-> {
+            for (int i = 0; i < arr.length / 4; i++) {
+                sum1 += 1 / arr[i];
+            }
+        });
+
+        //start thread
+        thread1.start();
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
         // 2/4 of the array (from first to second quarter)
-        for (int i = arr.length / 4; i < arr.length / 4 * 2; i++) {
-            sum2 += 1 / arr[i];
-        }
+        //create a thread to run loop
+        Thread thread2 = new Thread( ()-> {
+                for (int i = arr.length / 4; i < arr.length / 4 * 2; i++) {
+                sum2 += 1 / arr[i];
+            }
+        });
+
+        //start thread
+        thread2.start();
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
         // 3/4 of the array (from second to third quarter)
-        for (int i = arr.length / 4 * 2; i < arr.length / 4 * 3; i++) {
-            sum3 += 1 / arr[i];
-        }
+        //create a thread to run loop
+        Thread thread3 = new Thread( ()-> {
+            for (int i = arr.length / 4 * 2; i < arr.length / 4 * 3; i++) {
+                sum3 += 1 / arr[i];
+            }
+        });
+
+        //start thread 3
+        thread3.start();
+
         // Create a 'for...loop' to calculate the sum of the reciprocals in
-        // the BOTTOM half of the array (from third to full size)
-        for (int i = arr.length / 4 * 3; i < arr.length; i++) {
-            sum4 += 1 / arr[i];
-        }
+        // the BOTTOM half of the array (from third to full size
+       // create a thread to run loop
+            Thread thread4 = new Thread( ()-> {
+                for (int i = arr.length / 4 * 3; i < arr.length; i++) {
+                    sum4 += 1 / arr[i];
+                }
+            });
+        //start thread 4
+        thread4.start();
+
+        thread1.join();
+        thread2.join();
+        thread3.join();
+        thread4.join();
 
 
         // Calculate the total sum from the result of each for...loop
@@ -111,7 +142,7 @@ public class Main {
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
         // the top HALF of the array
-        for (int i = 0; i < arr.length; i++) {
+        for (int i = 0; i < arr.length/2; i++) {
             sum1 += 1 / arr[i];        }
 
         // Create a 'for...loop' to calculate the sum of the reciprocals in
@@ -177,10 +208,27 @@ public class Main {
     }
 
 
-    //private static double arraySumStream(double[] arr) {
+    private static double arraySumStream(double[] arr) {
 
-    //Your code goes here
-    //}
+         sum1 = 0.0;
+
+       // START our 'stopwatch' to record the duration of the PARALLEL calculation
+        long startPoint = System.nanoTime();
+
+       //get final sum from stream by adding values from arr to sum1
+       DoubleStream.of(arr).parallel().map(d -> sum1 = sum1 + 1 / d).sum();
+
+       // STOP our 'stopwatch' to record the duration of the calculation
+       long nanoRunTime = System.nanoTime() - startPoint;
+
+       double finalSum = sum1;
+
+       printOutcome("STREAM", nanoRunTime, finalSum);
+
+     return finalSum;
+
+    }
+
     public static void menu(double[] testArray) throws InterruptedException {
 
         //initial switch case variable
@@ -193,7 +241,8 @@ public class Main {
             System.out.println(" 1. Sequential");
             System.out.println(" 2. Parallel");
             System.out.println(" 3. Quadruple");
-            System.out.println(" 4. Exit");
+            System.out.println(" 4. Stream");
+            System.out.println(" 5. Exit");
 
             //get int from user
             selection = sc.nextInt();
@@ -202,8 +251,9 @@ public class Main {
                 case 1 -> arraySumSequential(testArray);
                 case 2 -> arraySumParallel(testArray);
                 case 3 -> arraySumQuadruple(testArray);
+                case 4 -> arraySumStream(testArray);
                 //exit program when 4 is selected
-                case 4 -> System.exit(0);
+                case 5 -> System.exit(0);
                 //default called when user selects wrong input
                 default -> System.out.println("oops! try again please.....");
             }
