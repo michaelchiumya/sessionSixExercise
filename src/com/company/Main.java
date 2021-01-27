@@ -5,8 +5,9 @@ package com.company;
  * @author seank
  * This Java application allows for the experimentation with Threads and Parallel Programming
  */
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+
+import java.util.Random;
+import java.util.Scanner;
 import java.util.stream.DoubleStream;
 //import java.util.stream.DoubleStream;
 
@@ -210,18 +211,17 @@ public class Main {
 
     private static double arraySumStream(double[] arr) {
 
-         sum1 = 0.0;
+          sum1 = 0.0;
 
        // START our 'stopwatch' to record the duration of the PARALLEL calculation
         long startPoint = System.nanoTime();
 
        //get final sum from stream by adding values from arr to sum1
-       DoubleStream.of(arr).parallel().map(d -> sum1 = sum1 + 1 / d).sum();
+        double finalSum = DoubleStream.of(arr).parallel().map(d-> 1/d).sum();
 
        // STOP our 'stopwatch' to record the duration of the calculation
        long nanoRunTime = System.nanoTime() - startPoint;
 
-       double finalSum = sum1;
 
        printOutcome("STREAM", nanoRunTime, finalSum);
 
@@ -232,7 +232,7 @@ public class Main {
     public static void menu(double[] testArray) throws InterruptedException {
 
         //initial switch case variable
-        int selection = 0;
+        int selection;
         Scanner sc =new Scanner(System.in);
 
         while(true){
