@@ -8,8 +8,8 @@ package com.company;
 
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.DoubleStream;
-//import java.util.stream.DoubleStream;
 
 public class Main {
 
@@ -26,6 +26,7 @@ public class Main {
         double grandTotalPar = 0.0;
         double grandTotalQuad = 0.0;
         double grandTotalStream = 0.0;
+        double grandToTalUserDefined =0.0;
 
 
         int rnNumber;
@@ -48,6 +49,7 @@ public class Main {
         grandTotalPar = arraySumParallel(testArray);
         grandTotalQuad = arraySumQuadruple(testArray);
         grandTotalStream = arraySumStream(testArray);
+        grandToTalUserDefined = userChoice(testArray,16);
 
         //jump a line on print
         System.out.println();
@@ -231,34 +233,43 @@ public class Main {
 
     public static void menu(double[] testArray) throws InterruptedException {
 
-        //initial switch case variable
-        int selection;
+       //scanner object to get user input
         Scanner sc =new Scanner(System.in);
 
         while(true){
             //print for user to select
-            System.out.println(" select number from menu to choose type of calculation to perform");
-            System.out.println(" 1. Sequential");
-            System.out.println(" 2. Parallel");
-            System.out.println(" 3. Quadruple");
-            System.out.println(" 4. Stream");
-            System.out.println(" 5. Exit");
+            System.out.println(" select number of threads to run");
+            System.out.println(" 0. To Exit");
 
-            //get int from user
-            selection = sc.nextInt();
-            switch (selection) {
-                //call method depending on value of selection
-                case 1 -> arraySumSequential(testArray);
-                case 2 -> arraySumParallel(testArray);
-                case 3 -> arraySumQuadruple(testArray);
-                case 4 -> arraySumStream(testArray);
-                //exit program when 4 is selected
-                case 5 -> System.exit(0);
-                //default called when user selects wrong input
-                default -> System.out.println("oops! try again please.....");
+            if(sc.nextInt() > 0){
+                userChoice(testArray, sc.nextInt());
+            }else if(sc.nextInt() == 0){
+                System.exit(0);
+            }else{
+                System.out.println("oops! try again please.....");
             }
+
         }
 
+    }
+
+    public static double userChoice( double myArr[], int noOfThread) {
+
+        double finalSum = 0.0;
+        //forkJoin object to split tasks into smaller and independent sub-tasks into user input defined number
+        ForkJoinPool forkJoinPool = new ForkJoinPool(noOfThread);
+
+        // START our 'stopwatch' to record the duration of the PARALLEL calculation
+        long startPoint = System.nanoTime();
+
+        finalSum = (double) forkJoinPool.invoke(new Calculation(myArr));
+
+        // STOP our 'stopwatch' to record the duration of the calculation
+        long nanoRunTime = System.nanoTime() - startPoint;
+
+
+        printOutcome("USER-PREDEFINED  ", nanoRunTime, finalSum);
+        return finalSum ;
     }
 
     private static void printOutcome(String label, long runTime, double sum) {
